@@ -1,5 +1,5 @@
 DATASET: 'CpddDataset'
-DATA_PATH: '/home/maziyuan/fuxian/dataset_preprocessing/cpdd'
+DATA_PATH: '/home/public/mzydata/cpdd'
 
 POINT_CLOUD_RANGE: [0, -40, -2, 96, 40, 4]
 
