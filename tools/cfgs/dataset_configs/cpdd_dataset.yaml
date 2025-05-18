@@ -1,0 +1,84 @@
+DATASET: 'CpddDataset'
+DATA_PATH: '/home/maziyuan/fuxian/dataset_preprocessing/cpdd'
+
+POINT_CLOUD_RANGE: [0, -40, -2, 96, 40, 4]
+
+MAP_CLASS_TO_KITTI: {
+    'Car': 'Car',
+    # 'Van': 'Car',
+    'Bus': 'Car',
+    'Truck': 'Car',
+    'Pedestrian': 'Pedestrian',
+    # 'Cyclist': 'Cyclist',
+    'Bicycle': 'Cyclist',
+    # 'BicycleRider': 'Cyclist',
+    # 'Motorcycle': 'Cyclist',
+}
+
+# WAYMO_CLASSES = ['unknown', 'Vehicle', 'Pedestrian', 'Sign', 'Cyclist']
+MAP_CLASS_TO_WAYMO: {
+    'Car': 'Vehicle',
+    # 'Van': 'Vehicle',
+    'Bus': 'Vehicle',
+    'Truck': 'Vehicle',
+    'Pedestrian': 'Pedestrian',
+    # 'Cyclist': 'Cyclist',
+    'Bicycle': 'Cyclist',
+    # 'BicycleRider': 'Cyclist',
+    # 'Motorcycle': 'Cyclist',
+}
+
+DATA_SPLIT: {
+    'train': train,
+    'test': val
+}
+
+INFO_PATH: {
+    'train': [cpdd_infos_train.pkl],
+    'test': [cpdd_infos_val.pkl],
+}
+
+POINT_FEATURE_ENCODING: {
+    encoding_type: absolute_coordinates_encoding,
+    used_feature_list: ['x', 'y', 'z', 'intensity', 'velocity'],
+    src_feature_list: ['x', 'y', 'z', 'reflectivity', 'velocity', 'time-offset', 'line-index', 'intensity'],
+}
+
+DATA_AUGMENTOR:
+    DISABLE_AUG_LIST: ['placeholder']
+    AUG_CONFIG_LIST:
+        - NAME: gt_sampling
+          USE_ROAD_PLANE: False
+          DB_INFO_PATH:
+              - infos/cpdd_dbinfos_train.pkl
+          PREPARE: {
+             filter_by_min_points: ['Car:10', 'Van:10', 'Bus:10', 'Truck:10', 'Pedestrian:10', 'Cyclist:10', 'Bicycle:10', 'BicycleRider:10', 'Motorcycle:10'],
+          }
+
+          SAMPLE_GROUPS: ['Car:15', 'Van:10', 'Bus:1', 'Truck:1', 'Pedestrian:10', 'Cyclist:3', 'Bicycle:3', 'BicycleRider:3', 'Motorcycle:3']
+          NUM_POINT_FEATURES: 8
+          DATABASE_WITH_FAKELIDAR: False
+          REMOVE_EXTRA_WIDTH: [0.0, 0.0, 0.0]
+          LIMIT_WHOLE_SCENE: True  # 如果开启，则在采样时会根据当前帧某个类别已有的数量来减少相应类别的采样个数
+
+        - NAME: random_world_flip
+          ALONG_AXIS_LIST: ['x']
+
+
+DATA_PROCESSOR:
+    - NAME: mask_points_and_boxes_outside_range
+      REMOVE_OUTSIDE_BOXES: True
+
+    - NAME: shuffle_points
+      SHUFFLE_ENABLED: {
+        'train': True,
+        'test': False
+      }
+
+    - NAME: transform_points_to_voxels
+      VOXEL_SIZE: [0.1, 0.1, 0.15]
+      MAX_POINTS_PER_VOXEL: 5
+      MAX_NUMBER_OF_VOXELS: {
+        'train': 120000,
+        'test': 120000
+      }
